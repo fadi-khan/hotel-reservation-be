@@ -1,13 +1,13 @@
-import { Column, PrimaryGeneratedColumn } from "typeorm";
+import { Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from "typeorm";
 
-export abstract class Base{
+export abstract class Base {
 
-    @PrimaryGeneratedColumn()
-    id:number;
+  @PrimaryGeneratedColumn()
+  id: number;
 
-    @Column({default:()=>new Date()})
-    createdAt:Date;
+  @CreateDateColumn({ type: 'timestamptz' })
+  createdAt: Date;
 
-    @Column({ onUpdate: "CURRENT_TIMESTAMP",default:()=>new Date()})
-    updatedAt?:Date;
+  @UpdateDateColumn({ type: 'timestamptz' })
+  updatedAt?: Date;
 }

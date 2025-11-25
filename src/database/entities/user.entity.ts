@@ -1,18 +1,27 @@
 import { UserType } from "src/enums/UserType";
-import { BaseEntity, Column, Entity } from "typeorm";
+import { Column, Entity } from "typeorm";
+import { Base } from "./base.entity";
 
 @Entity("users")
-export class User  extends BaseEntity{
+export class User extends Base {
 
     @Column()
-    name:string;
+    name: string;
 
-    @Column({unique:true})
-    email:string;
+    @Column({ unique: true })
+    email: string;
 
     @Column()
-    password:string;
+    password: string;
 
-    @Column({default:UserType.GUEST})
-    userType:UserType;
+    @Column({
+        type: 'enum',
+        enum: UserType,
+        default: UserType.GUEST
+    })
+    userType: UserType;
+
+    // hashed refresh token (nullable)
+    @Column({type:'text', nullable: true })
+    refreshToken: string | null;
 }

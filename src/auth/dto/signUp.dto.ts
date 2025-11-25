@@ -1,5 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { IsEmail, MinLength } from "class-validator";
+import { UserType } from "src/enums/UserType";
 
 export class SignUpDto {
  
@@ -14,4 +15,7 @@ export class SignUpDto {
     @ApiProperty({example:"abc"})
     @MinLength(3, {message:"Name must be at least 3 characters long"})
     name:string;
+
+    @ApiProperty({example:"GUEST"})
+    userType:UserType;
 }

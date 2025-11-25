@@ -9,18 +9,18 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
         type: 'postgres',
-        host: configService.get<string>('db.host'),
-        port: configService.get<number>('db.port'),
-        username: configService.get<string>('db.username'),
-        password: configService.get<string>('db.password'),
-        database: configService.get<string>('db.database'),
+        host: configService.get<string>('DB_HOST'),
+        port: Number(configService.get<string>('DB_PORT')), // ensure number
+        username: configService.get<string>('DB_USERNAME'),
+        password: configService.get<string>('DB_PASSWORD'), // must be a string
+        database: configService.get<string>('DB_DATABASE'),
         dropSchema: false,
         autoLoadEntities: true,
         keepConnectionAlive: true,
-        synchronize: false,
+        synchronize: true,
         extra: {
-          max: configService.get<number>('db.maxPoolSize'),
-          min: configService.get<number>('db.minPoolSize'),
+          max: Number(configService.get<string>('DB_MAX_POOL_SIZE')) || undefined,
+          min: Number(configService.get<string>('DB_MIN_POOL_SIZE')) || undefined,
         },
         entities: [`${__dirname}/entities/**.entity.{js,ts}`],
       }),
