@@ -1,10 +1,11 @@
-import { Body, Controller, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { ApiResponse } from '@nestjs/swagger';
 import { SignUpDto } from './dto/signUp.dto';
 import { AuthService } from './auth.service';
 import { SignInDto } from './dto/signIn.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { RTGuard } from './guards/rt.guard';
+import type { Response } from 'express';
 
 @Controller('auth')
 export class AuthController {
@@ -21,8 +22,17 @@ export class AuthController {
     // will use local guard when not return auth service logged in method 
     @ApiResponse({status:200 , description:"logged in successfully"})
     @Post('sign-in')
-    async signIn(@Body() signInDto:SignInDto){
-        return this.authService.signIn(signInDto)
+    async signIn(@Body() signInDto:SignInDto, @Res({ passthrough: true }) res: Response){
+        const tokens = await this.authService.signIn(signInDto);
+
+        res.cookie('refresh_token', tokens.refresh_token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            path: '/auth',
+        });
+
+        return { access_token: tokens.access_token };
     }
 
 
@@ -36,10 +46,19 @@ export class AuthController {
 
     @UseGuards(RTGuard)
     @Post('refresh-token')
-    async refreshToken(@Req() req){
+    async refreshToken(@Req() req, @Res({ passthrough: true }) res: Response){
         const {sub:userId, refreshToken}= req.user
 
-        return this.authService.refreshTokens(userId,refreshToken)
+        const tokens = await this.authService.refreshTokens(userId,refreshToken)
+
+        res.cookie('refresh_token', tokens.refresh_token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            path: '/auth',
+        });
+
+        return { access_token: tokens.access_token };
     }
 
 
