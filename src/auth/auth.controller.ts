@@ -6,6 +6,7 @@ import { SignInDto } from './dto/signIn.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { RTGuard } from './guards/rt.guard';
 import type { Response } from 'express';
+import { OtpDto } from './dto/otp.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -22,17 +23,27 @@ export class AuthController {
     // will use local guard when not return auth service logged in method 
     @ApiResponse({status:200 , description:"logged in successfully"})
     @Post('sign-in')
-    async signIn(@Body() signInDto:SignInDto, @Res({ passthrough: true }) res: Response){
-        const tokens = await this.authService.signIn(signInDto);
+    async signIn(@Body() signInDto:SignInDto){
+        return await this.authService.signIn(signInDto);
 
-        res.cookie('refresh_token', tokens.refresh_token, {
+      
+    }
+
+
+    @Post('verify-otp')
+    async verifyOtp( @Body()  otpDto:OtpDto , @Res({ passthrough: true }) res: Response ){
+
+        const tokens  = await this.authService.verifyOtpAndLogin(otpDto.email,otpDto.otp)
+
+  res.cookie('refresh_token', tokens.refresh_token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'lax',
             path: '/auth',
         });
-
         return { access_token: tokens.access_token };
+
+
     }
 
 
