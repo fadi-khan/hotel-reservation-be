@@ -10,6 +10,7 @@ import { LocalStrategy } from './strategies/local.strategy';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { RTStrategry } from './strategies/rt.strategy';
 import { Otp } from 'src/database/entities/otp.entity';
+import { MailerModule } from 'src/mailer/mailer.module';
 
 @Module({
   imports:[
@@ -25,7 +26,8 @@ import { Otp } from 'src/database/entities/otp.entity';
         }
       })
 
-    })
+    }),
+    MailerModule
   ],
   controllers: [AuthController],
   providers: [AuthService,LocalStrategy,JwtStrategy,RTStrategry],

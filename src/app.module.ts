@@ -5,6 +5,7 @@ import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { ConfigModule } from '@nestjs/config';
 import { DatabaseModule } from './database/database.module';
+import { MailerModule } from './mailer/mailer.module';
 
 @Module({
   imports: [
@@ -13,7 +14,8 @@ import { DatabaseModule } from './database/database.module';
     DatabaseModule,
     ConfigModule.forRoot({
       isGlobal:true
-    })
+    }),
+    MailerModule
     
     ],
   controllers: [AppController],

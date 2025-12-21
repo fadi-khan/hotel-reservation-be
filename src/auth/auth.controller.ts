@@ -33,7 +33,7 @@ export class AuthController {
     @Post('verify-otp')
     async verifyOtp( @Body()  otpDto:OtpDto , @Res({ passthrough: true }) res: Response ){
 
-        const tokens  = await this.authService.verifyOtpAndLogin(otpDto.email,otpDto.otp)
+        const tokens  = await this.authService.verifyOtpAndLogin(otpDto.email,Number(otpDto.otp))
 
   res.cookie('refresh_token', tokens.refresh_token, {
             httpOnly: true,
