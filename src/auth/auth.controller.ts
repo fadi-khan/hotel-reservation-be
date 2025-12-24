@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Req, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { ApiResponse } from '@nestjs/swagger';
 import { SignUpDto } from './dto/signUp.dto';
 import { AuthService } from './auth.service';
@@ -11,31 +11,31 @@ import { OtpDto } from './dto/otp.dto';
 @Controller('auth')
 export class AuthController {
 
-    constructor(private readonly authService:AuthService){}
+    constructor(private readonly authService: AuthService) { }
 
-    @ApiResponse({status:200 , description:"Signed Up successfully"})
-    @ApiResponse({status:400 , description:"Bad Request"})
+    @ApiResponse({ status: 200, description: "Signed Up successfully" })
+    @ApiResponse({ status: 400, description: "Bad Request" })
     @Post('sign-up')
-    async signUp(@Body() signUpDto:SignUpDto){
+    async signUp(@Body() signUpDto: SignUpDto) {
         return this.authService.signUp(signUpDto);
     }
 
     // will use local guard when not return auth service logged in method 
-    @ApiResponse({status:200 , description:"logged in successfully"})
+    @ApiResponse({ status: 200, description: "logged in successfully" })
     @Post('sign-in')
-    async signIn(@Body() signInDto:SignInDto){
+    async signIn(@Body() signInDto: SignInDto) {
         return await this.authService.signIn(signInDto);
 
-      
+
     }
 
 
     @Post('verify-otp')
-    async verifyOtp( @Body()  otpDto:OtpDto , @Res({ passthrough: true }) res: Response ){
+    async verifyOtp(@Body() otpDto: OtpDto, @Res({ passthrough: true }) res: Response) {
 
-        const tokens  = await this.authService.verifyOtpAndLogin(otpDto.email,Number(otpDto.otp))
+        const tokens = await this.authService.verifyOtpAndLogin(otpDto.email, Number(otpDto.otp))
 
-  res.cookie('refresh_token', tokens.refresh_token, {
+        res.cookie('refresh_token', tokens.refresh_token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'lax',
@@ -48,19 +48,20 @@ export class AuthController {
 
 
     @UseGuards(JwtAuthGuard)
-    @Post()
-    async logout(@Req() req:any ){
-        const user= req.user;
+    @Post('logout')
+    async logout(@Req() req: any, @Res({ passthrough: true }) res: Response) {
+        const user = req.user;
+        res.clearCookie('refresh_token', { path: '/auth' });
         return this.authService.logout(user.sub)
     }
 
 
     @UseGuards(RTGuard)
     @Post('refresh-token')
-    async refreshToken(@Req() req, @Res({ passthrough: true }) res: Response){
-        const {sub:userId, refreshToken}= req.user
+    async refreshToken(@Req() req, @Res({ passthrough: true }) res: Response) {
+        const { sub: userId, refreshToken } = req.user
 
-        const tokens = await this.authService.refreshTokens(userId,refreshToken)
+        const tokens = await this.authService.refreshTokens(userId, refreshToken)
 
         res.cookie('refresh_token', tokens.refresh_token, {
             httpOnly: true,
@@ -72,7 +73,14 @@ export class AuthController {
         return { access_token: tokens.access_token };
     }
 
+    @UseGuards(JwtAuthGuard)
+    @Get('profile')
+    profile(@Req() req) {
+        return req.user;
+    }
 
 
-    
+
+
+
 }

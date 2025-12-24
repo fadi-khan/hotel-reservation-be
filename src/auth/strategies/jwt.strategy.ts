@@ -16,18 +16,19 @@ export class JwtStrategy extends PassportStrategy(Strategy,"jwt"){
        super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       secretOrKey: configService.getOrThrow<string>('JWT_SECRET'),
+      passReqToCallback:true
     });
     }
 
 
-   async validate(payload:any,req:Request){
+   async validate(req:Request,payload:any){
         console.log("request coming from : ",req.url)
         console.log("requests base url : ",req.baseUrl )
         const user = await this.userRepo.findOne({where:{id:payload.sub}})
         console.log("called by JWT strategy ")
         if(!user) throw new UnauthorizedException("Invalid Credential")
 
-        return({id:user.id , email:user.email})
+        return({ sub: user.id, email: user.email, name: user.name })
 
 
     }

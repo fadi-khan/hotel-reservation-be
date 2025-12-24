@@ -6,6 +6,7 @@ import { UserModule } from './user/user.module';
 import { ConfigModule } from '@nestjs/config';
 import { DatabaseModule } from './database/database.module';
 import { MailerModule } from './mailer/mailer.module';
+import { RoomModule } from './room/room.module';
 
 @Module({
   imports: [
@@ -15,7 +16,8 @@ import { MailerModule } from './mailer/mailer.module';
     ConfigModule.forRoot({
       isGlobal:true
     }),
-    MailerModule
+    MailerModule,
+    RoomModule
     
     ],
   controllers: [AppController],
