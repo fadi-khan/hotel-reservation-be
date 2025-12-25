@@ -14,7 +14,15 @@ export class JwtStrategy extends PassportStrategy(Strategy,"jwt"){
         private  userRepo :Repository<User>
     ){
        super({
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      jwtFromRequest: ExtractJwt.fromExtractors([
+        (req:Request)=>{
+           console.log('All Cookies:', req.cookies); // Is this undefined? Is it empty?
+    let token = req?.cookies?.['access_token'];
+    console.log('Extracted Token:', token ? 'Found' : 'Not Found');
+    return token;
+        },
+        ExtractJwt.fromAuthHeaderAsBearerToken() // in case the cookies method fails 
+      ]),
       secretOrKey: configService.getOrThrow<string>('JWT_SECRET'),
       passReqToCallback:true
     });

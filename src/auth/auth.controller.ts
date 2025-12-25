@@ -5,7 +5,7 @@ import { AuthService } from './auth.service';
 import { SignInDto } from './dto/signIn.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { RTGuard } from './guards/rt.guard';
-import type { Response } from 'express';
+import { response, type Response } from 'express';
 import { OtpDto } from './dto/otp.dto';
 
 @Controller('auth')
@@ -31,17 +31,35 @@ export class AuthController {
 
 
     @Post('verify-otp')
-    async verifyOtp(@Body() otpDto: OtpDto, @Res({ passthrough: true }) res: Response) {
+    async verifyOtp(@Body() otpDto: OtpDto, @Res({ passthrough: true }) res: Response, @Req() req: any) {
 
-        const tokens = await this.authService.verifyOtpAndLogin(otpDto.email, Number(otpDto.otp))
+        const response = await this.authService.verifyOtpAndLogin(otpDto.email, Number(otpDto.otp))
 
-        res.cookie('refresh_token', tokens.refresh_token, {
+        res.cookie('access_token', response.tokens.access_token,{
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production', // true in production
+            sameSite: 'lax',
+            path: '/', // <--- THIS IS CRITICAL
+        });
+
+        // Do the same for refresh_token
+        res.cookie('refresh_token', response.tokens.refresh_token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'lax',
-            path: '/auth',
+            path: '/', // Change this from '/auth' to '/'
         });
-        return { access_token: tokens.access_token };
+        // res.cookie('refresh_token', response.tokens.refresh_token, {
+        //     httpOnly: true,
+        //     secure: process.env.NODE_ENV === 'production',
+        //     sameSite: 'lax',
+        //     path: '/auth',
+        // });
+        return { access_token: response.tokens.access_token, user: {
+            email:response.user.email,
+            role:response.user.userType,
+            
+        } };
 
 
     }
@@ -51,9 +69,11 @@ export class AuthController {
     @Post('logout')
     async logout(@Req() req: any, @Res({ passthrough: true }) res: Response) {
         const user = req.user;
-        res.clearCookie('refresh_token', { path: '/auth' });
+        res.clearCookie('refresh_token', { path: '/' });
+         res.clearCookie('access_token', { path: '/' });
         return this.authService.logout(user.sub)
     }
+
 
 
     @UseGuards(RTGuard)
@@ -67,7 +87,7 @@ export class AuthController {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'lax',
-            path: '/auth',
+            path: '/',
         });
 
         return { access_token: tokens.access_token };
