@@ -10,13 +10,14 @@ async function bootstrap() {
   app.use(cookieParser());
 
   app.enableCors({
-    origin: '*', // put your frontend URL/port here
+    origin: '*', 
     credentials: true,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     allowedHeaders: 'Content-Type, Authorization',
   });
   setupSwagger(app);
-  const port = process.env.NEST_PORT || 3001;
+
+const port = process.env.PORT || process.env.NEST_PORT || 3001;;
   await app.listen(port, "0.0.0.0");
   console.log(`Server running on port ${port}`);
 }
