@@ -9,6 +9,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
         type: 'postgres',
+        url: configService.get<string>('DATABASE_URL'),
         host: configService.get<string>('DB_HOST'),
         port: Number(configService.get<string>('DB_PORT')), // ensure number
         username: configService.get<string>('DB_USERNAME'),
@@ -23,9 +24,10 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
           min: Number(configService.get<string>('DB_MIN_POOL_SIZE')) || undefined,
         },
         entities: [`${__dirname}/entities/**.entity.{js,ts}`],
+        ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false,
       }),
     }),
   ],
   exports: [TypeOrmModule],
 })
-export class DatabaseModule {}
+export class DatabaseModule { }
