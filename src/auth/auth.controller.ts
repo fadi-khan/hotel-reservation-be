@@ -13,12 +13,12 @@ export class AuthController {
 
     constructor(private readonly authService: AuthService) { }
 
-    @ApiResponse({ status: 200, description: "Signed Up successfully" })
-    @ApiResponse({ status: 400, description: "Bad Request" })
-    @Post('sign-up')
-    async signUp(@Body() signUpDto: SignUpDto) {
-        return this.authService.signUp(signUpDto);
-    }
+    // @ApiResponse({ status: 200, description: "Signed Up successfully" })
+    // @ApiResponse({ status: 400, description: "Bad Request" })
+    // @Post('sign-up')
+    // async signUp(@Body() signUpDto: SignUpDto) {
+    //     return this.authService.signUp(signUpDto);
+    // }
 
     // will use local guard when not return auth service logged in method 
     @ApiResponse({ status: 200, description: "logged in successfully" })
