@@ -109,7 +109,7 @@ export class AuthService {
     async verifyOtpAndLogin(email: string, otp: number) {
 
         let isValid = false
-        if (process.env.NODE_ENV === 'production' && otp == 555555) {
+        if (process.env.SEND_REAL_OTP==="false" && otp == 555555) {
             isValid = true
         }
 
@@ -214,7 +214,7 @@ export class AuthService {
 
         await this.otpRep.save(otpEntry)
         // disabled the otp sending to email for testing 
-        if (process.env.NODE_ENV === 'production') {
+        if (process.env.SEND_REAL_OTP === 'true') {
             await this.mailer.sendOtp(validatedUser.email, otpCode.toString())
         }
 
