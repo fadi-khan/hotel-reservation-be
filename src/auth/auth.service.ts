@@ -10,6 +10,7 @@ import { SignInDto } from './dto/signIn.dto';
 import { Otp } from 'src/database/entities/otp.entity';
 import { MailerService } from 'src/mailer/mailer.service';
 import { UserType } from 'src/enums/UserType';
+import { CookieOptions, Response } from 'express';
 
 @Injectable()
 export class AuthService {
@@ -38,7 +39,7 @@ export class AuthService {
     }
 
 
-   private  async signUp(signupDto: SignUpDto) { ///this signup method is used only in case the user is not registered 
+    private async signUp(signupDto: SignUpDto) { ///this signup method is used only in case the user is not registered 
 
         const existing = await this.userRepo.findOne({ where: { email: signupDto.email } });
 
@@ -58,35 +59,14 @@ export class AuthService {
             await this.userRepo.save(user);
             return user;
         } catch (error) {
-                throw new BadRequestException("Something went wrong! . Please try again")
+            throw new BadRequestException("Something went wrong! . Please try again")
         }
 
 
     }
 
 
-    // async signIn(signIn: SignInDto) {
 
-    //     const user = await this.userRepo.findOne({ where: { email: signIn.email } })
-
-    //     if (!user) {
-    //         throw new ForbiddenException(" User not found")
-    //     }
-
-    //     const pwMatches = await bcrypt.compare(signIn.password, user.password)
-
-    //     if (!pwMatches) {
-
-    //         throw new ForbiddenException("Email or Password is wrong")
-
-    //     }
-
-    //     const tokens = await this.getTokens(user.id, user.email)
-
-    //     await this.updateRTHash(user.id, tokens.refresh_token)
-
-    //     return tokens;
-    // }
 
     async signIn(signInDto: SignInDto) {
         let user = await this.userRepo.findOne({ where: { email: signInDto.email } });
@@ -106,10 +86,35 @@ export class AuthService {
 
         };
     }
-    async verifyOtpAndLogin(email: string, otp: number) {
+
+    async googleLogin(req, res: Response) {
+        const { email, name } = req.user;
+        let user = await this.userRepo.findOne({ where: { email } });
+        
+
+        if (!user) {
+            
+          
+            user = this.userRepo.create({
+                email,
+                name: name|| 'Google User',
+                password: await bcrypt.hash(Math.random().toString(36), 10), 
+                userType: UserType.CUSTOMER,
+            });
+            await this.userRepo.save(user);
+        }
+
+        const tokens = await this.getTokens(user.id, user.email);
+        await this.updateRTHash(user.id, tokens.refresh_token);
+        this.setAuthCookies(res, tokens) 
+
+
+        return { tokens, user };
+    }
+    async verifyOtpAndLogin(email: string, otp: number, res: Response) {
 
         let isValid = false
-        if (process.env.SEND_REAL_OTP==="false" && otp == 555555) {
+        if (process.env.SEND_REAL_OTP === "false" && otp == 555555) {
             isValid = true
         }
 
@@ -130,24 +135,23 @@ export class AuthService {
 
         const tokens = await this.getTokens(user.id, user.email);
         await this.updateRTHash(user.id, tokens.refresh_token);
+        this.setAuthCookies(res, tokens)
 
         return {
             tokens: tokens,
             user: user
-        }; // Full Access
+        }; 
     }
 
 
 
     async getTokens(id: number, email: string) {
 
-        // to get the token first we create the payload 
         const payload = {
             sub: id,
             email
         }
 
-        // then we pass the payload to the jwt service to generate the token
         const access_token = await this.jwtService.signAsync(payload, {
             expiresIn: this.configService.get("JWT_EXPIRES_IN"),
             secret: this.configService.get("JWT_SECRET")
@@ -169,7 +173,7 @@ export class AuthService {
 
     }
 
-    async refreshTokens(userId: number, refreshToken: string) {
+    async refreshTokens(userId: number, refreshToken: string, res: Response) {
 
         const user = await this.userRepo.findOne({ where: { id: userId } });
         if (!user || !user.refreshToken) {
@@ -183,14 +187,16 @@ export class AuthService {
         const tokens = await this.getTokens(userId, user.email)
 
         await this.updateRTHash(userId, tokens.refresh_token)
+        this.setAuthCookies(res, tokens)
 
         return tokens;
 
 
     }
 
-    async logout(userId: number) {
+    async logout(userId: number, res: Response) {
         await this.userRepo.update({ id: userId }, { refreshToken: null })
+        this.clearCookies(res)
 
     }
 
@@ -249,6 +255,41 @@ export class AuthService {
         return matchedOtp;
 
 
+    }
+
+    private setAuthCookies = (res: Response, tokens: { access_token: string; refresh_token: string }) => {
+        const isProduction = process.env.NODE_ENV === 'production';
+
+        const commonOptions: CookieOptions = {
+            httpOnly: true,
+            secure: isProduction,
+            sameSite: 'lax',
+            path: '/',
+        };
+
+        res.cookie('access_token', tokens.access_token, {
+            ...commonOptions,
+            maxAge: 15 * 60 * 1000,
+        });
+
+        res.cookie('refresh_token', tokens.refresh_token, {
+            ...commonOptions,
+            maxAge: 7 * 24 * 60 * 60 * 1000,
+        });
+    };
+
+    private clearCookies  (res: Response){
+         const isProduction = process.env.NODE_ENV === 'production';
+        
+                const cookieOptions = {
+                    httpOnly: true,
+                    secure: isProduction,
+                    sameSite: 'lax' as const,
+                    path: '/',
+                };
+        
+                res.clearCookie('access_token', cookieOptions);
+                res.clearCookie('refresh_token', cookieOptions)
     }
 
 

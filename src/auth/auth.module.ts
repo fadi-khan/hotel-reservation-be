@@ -11,6 +11,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { RTStrategry } from './strategies/rt.strategy';
 import { Otp } from 'src/database/entities/otp.entity';
 import { MailerModule } from 'src/mailer/mailer.module';
+import { GoogleStrategy } from './strategies/google.strategy';
 
 @Module({
   imports:[
@@ -30,7 +31,7 @@ import { MailerModule } from 'src/mailer/mailer.module';
     MailerModule
   ],
   controllers: [AuthController],
-  providers: [AuthService,LocalStrategy,JwtStrategy,RTStrategry],
+  providers: [AuthService,LocalStrategy,JwtStrategy,RTStrategry , GoogleStrategy],
   exports:[AuthService]
 
 })
