@@ -39,7 +39,12 @@ export class JwtStrategy extends PassportStrategy(Strategy, "jwt") {
     console.log("called by JWT strategy ")
     if (!user) throw new UnauthorizedException("Invalid Credential")
 
-    return ({ sub: user.id, email: user.email, name: user.name })
+    return ({
+      sub: user.id,
+      email: user.email,
+      name: user.name,
+      role:user.userType
+    })
 
 
   }

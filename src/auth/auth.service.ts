@@ -1,4 +1,4 @@
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, ConsoleLogger, ForbiddenException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { User } from 'src/database/entities/user.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -89,6 +89,8 @@ export class AuthService {
 
     async googleLogin(req, res: Response) {
         const { email, name } = req.user;
+
+        console.log('logging the req.user ' , req.user)
         let user = await this.userRepo.findOne({ where: { email } });
         
 

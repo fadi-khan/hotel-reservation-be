@@ -2,6 +2,9 @@ import { Column, Entity } from "typeorm";
 import { Base } from "./base.entity";
 import { RoomStatus } from "src/enums/RoomStatus";
 import { RoomFacility } from "src/enums/RoomFacility";
+import { RoomType } from "src/enums/RoomType";
+import { BedType } from "src/enums/BedType";
+import { IsOptional } from "class-validator";
 
 @Entity("room")
 export class Room extends Base{
@@ -31,11 +34,26 @@ export class Room extends Base{
     @Column({type:'timestamptz'})
     checkOutDate?:Date
 
-    @Column()
+    @Column({nullable:false})
     price:number
 
-    @Column()
+    @Column({nullable:true})
     discountedPrice?:number
+
+    @Column({
+        type:'enum',
+        enum:RoomType,
+        default:RoomType.STANDARD
+    })
+    roomType:RoomType
+
+       @Column({
+        type:'enum',
+        enum:BedType,
+        default:BedType.SINGLE
+    })
+    bedType:BedType
+
 
     
 

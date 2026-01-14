@@ -1,26 +1,80 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, HttpException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateRoomDto } from './dto/create-room.dto';
 import { UpdateRoomDto } from './dto/update-room.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Room } from 'src/database/entities/room.entity';
+import { Repository } from 'typeorm';
+import { RoomMapper } from './mappers/room.mapper';
+import { RoomQueryParamsDto } from './dto/room-query-params.dto';
 
 @Injectable()
 export class RoomService {
-  create(createRoomDto: CreateRoomDto) {
-    return 'This action adds a new room';
+
+  constructor(
+
+    @InjectRepository(Room)
+    private readonly roomRepo : Repository<Room>
+  ){ }
+
+  async create(createRoomDto: CreateRoomDto) {
+    
+    try {
+      await this.roomRepo.save(RoomMapper.toEntity(createRoomDto))
+    } 
+    catch (error) {
+       throw new BadRequestException("Failed to save to the room")
+    }
+
   }
 
-  findAll() {
-    return `This action returns all room`;
+  async findAll(query:RoomQueryParamsDto, skip:number, limit?:number ,) {
+
+    const {priceRangeEnd ,priceRangeStart ,bedType ,roomType,status  }  = query
+    
+    const whereClause: any = {
+      ...(status && {status}),
+      ...(bedType &&  { bedType}),
+      ...(roomType && {roomType})
+    };
+    
+    if (priceRangeStart && priceRangeEnd) {
+      whereClause.price = {
+        between: [priceRangeStart, priceRangeEnd]
+      };
+    }
+    
+    return  await this.roomRepo.find({
+      where: whereClause,
+      take:limit||10,
+      skip:skip || 0
+      
+    })
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} room`;
+   async findOne(id: number) {
+      try {
+        
+        return await this.findOne(id)
+
+      } catch (error) {
+        throw new NotFoundException('Room not found')
+      }
   }
 
-  update(id: number, updateRoomDto: UpdateRoomDto) {
-    return `This action updates a #${id} room`;
+  async update(id: number, updateRoomDto: UpdateRoomDto) {
+    try {
+       await this.roomRepo.update(id,updateRoomDto)
+
+    } catch (error) {
+      throw new BadRequestException("Failed to update the room ")
+    }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} room`;
+ async remove(id: number) {
+    try {
+      await this.roomRepo.delete(id)
+    } catch (error) {
+      
+    }
   }
 }
