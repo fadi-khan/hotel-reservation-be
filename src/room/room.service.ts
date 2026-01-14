@@ -74,7 +74,7 @@ export class RoomService {
     try {
       await this.roomRepo.delete(id)
     } catch (error) {
-      
+       throw new BadRequestException("Room deletion was unsucessfull!")
     }
   }
 }
