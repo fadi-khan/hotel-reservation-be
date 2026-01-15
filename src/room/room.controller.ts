@@ -13,7 +13,7 @@ import { LimitOnUpdateNotSupportedError } from 'typeorm';
 export class RoomController {
   constructor(private readonly roomService: RoomService) {}
 
-  @Post()
+  @Post("create")
   @Roles(UserType.ADMIN)
   @UseGuards(JwtAuthGuard,RolesGuard)
   create(@Body(ValidationPipe) createRoomDto: CreateRoomDto) {
@@ -23,9 +23,9 @@ export class RoomController {
   @Get()
   findAll(
     @Query(ValidationPipe) query: RoomQueryParamsDto,
-    @Query('range', new DefaultValuePipe(10), ParseIntPipe) limit?: number
+    @Query('range', new DefaultValuePipe(10), ParseIntPipe) limit?: number, skip?:number
   ) {
-    return this.roomService.findAll(query, limit||10);
+    return this.roomService.findAll(query, skip||10,limit);
   }
 
   @Get(':id')
@@ -33,7 +33,7 @@ export class RoomController {
     return this.roomService.findOne(id);
   }
 
-  @Patch(':id')
+  @Patch('update/:id')
   @Roles(UserType.ADMIN)
   @UseGuards(JwtAuthGuard,RolesGuard)
   update(

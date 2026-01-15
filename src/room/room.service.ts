@@ -42,13 +42,16 @@ export class RoomService {
         between: [priceRangeStart, priceRangeEnd]
       };
     }
-    
-    return  await this.roomRepo.find({
+    const response= await this.roomRepo.find({
       where: whereClause,
       take:limit||10,
       skip:skip || 0
       
     })
+    if (response.length<1) {
+      throw new NotFoundException("Rooms does not exist yet")
+    }
+    return  response
   }
 
    async findOne(id: number) {
