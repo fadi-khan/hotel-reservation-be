@@ -92,15 +92,15 @@ export class AuthService {
 
         console.log('logging the req.user ' , req.user)
         let user = await this.userRepo.findOne({ where: { email } });
-        
+
 
         if (!user) {
-            
-          
+
+
             user = this.userRepo.create({
                 email,
                 name: name|| 'Google User',
-                password: await bcrypt.hash(Math.random().toString(36), 10), 
+                password: await bcrypt.hash(Math.random().toString(36), 10),
                 userType: UserType.CUSTOMER,
             });
             await this.userRepo.save(user);
@@ -108,7 +108,7 @@ export class AuthService {
 
         const tokens = await this.getTokens(user.id, user.email);
         await this.updateRTHash(user.id, tokens.refresh_token);
-        this.setAuthCookies(res, tokens) 
+        this.setAuthCookies(res, tokens)
 
 
         return { tokens, user };
@@ -116,7 +116,7 @@ export class AuthService {
     async verifyOtpAndLogin(email: string, otp: number, res: Response) {
 
         const isValid = await this.validateOtp(email, otp);
-        
+
 
         if (!isValid) {
             throw new UnauthorizedException("Invalid or expired OTP");
@@ -136,7 +136,7 @@ export class AuthService {
         return {
             tokens: tokens,
             user:user
-        }; 
+        };
     }
 
 
@@ -265,8 +265,9 @@ export class AuthService {
         const commonOptions: CookieOptions = {
             httpOnly: true,
             secure: isProduction,
-            sameSite: 'lax',
+            sameSite: 'none', // MUST be 'none' for cross-subdomain requests
             path: '/',
+            domain: isProduction ? '.onrender.com' : undefined, // Share cookies across subdomains
         };
 
         res.cookie('access_token', tokens.access_token, {
@@ -281,17 +282,17 @@ export class AuthService {
     };
 
     private clearCookies  (res: Response){
-         const isProduction = process.env.NODE_ENV === 'production';
-        
-                const cookieOptions = {
-                    httpOnly: true,
-                    secure: isProduction,
-                    sameSite: 'lax' as const,
-                    path: '/',
-                };
-        
-                res.clearCookie('access_token', cookieOptions);
-                res.clearCookie('refresh_token', cookieOptions)
+        const isProduction = process.env.NODE_ENV === 'production';
+
+        const cookieOptions = {
+            httpOnly: true,
+            secure: isProduction,
+            sameSite: 'lax' as const,
+            path: '/',
+        };
+
+        res.clearCookie('access_token', cookieOptions);
+        res.clearCookie('refresh_token', cookieOptions)
     }
 
 
