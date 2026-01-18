@@ -28,10 +28,10 @@ export class Room extends Base{
     facilities?:RoomFacility[]
 
 
-    @Column({type:'timestamptz'})
+    @Column({type:'timestamptz', nullable: true})
     checkInDate?:Date
 
-    @Column({type:'timestamptz'})
+    @Column({type:'timestamptz', nullable: true})
     checkOutDate?:Date
 
     @Column({nullable:false})

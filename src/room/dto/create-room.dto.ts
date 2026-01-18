@@ -3,8 +3,11 @@ import { RoomStatus } from "src/enums/RoomStatus";
 import { RoomFacility } from "src/enums/RoomFacility";
 import { RoomType } from "src/enums/RoomType";
 import { BedType } from "src/enums/BedType";
+import { Transform } from 'class-transformer';
 
 export class CreateRoomDto {
+
+    
     @IsString()
     roomNo: string;
 
@@ -25,6 +28,7 @@ export class CreateRoomDto {
     @IsOptional()
     checkOutDate?: Date;
 
+    @Transform(({value})=>Number(value))
     @IsNumber()
     price: number;
 

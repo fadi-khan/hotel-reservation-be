@@ -22,6 +22,7 @@ export class RoomService {
       await this.roomRepo.save(RoomMapper.toEntity(createRoomDto))
     } 
     catch (error) {
+      console.log(error)
        throw new BadRequestException("Failed to save to the room")
     }
 

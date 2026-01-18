@@ -1,6 +1,6 @@
 
 
-import { Body, Controller, Get, Post, Req, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Req, Res, UseGuards, ValidationPipe } from '@nestjs/common';
 import { ApiResponse } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { SignInDto } from './dto/signIn.dto';
@@ -45,6 +45,7 @@ export class AuthController {
     async googleAuthRedirect(@Req() req, @Res() res: Response) {
         const result = await this.authService.googleLogin(req , res);
         const frontendUrl = this.configService.get("REDIRECT_FRONTEND_URL"); 
+        
            // Construct the URL with user data in query params
     const redirectUrl = new URL(frontendUrl);
     redirectUrl.pathname = '/login-success'; // Set the path dynamically
@@ -60,7 +61,7 @@ export class AuthController {
 
 
     @Post('verify-otp')
-    async verifyOtp(@Body() otpDto: OtpDto, @Res({ passthrough: true }) res: Response, @Req() req: any) {
+    async verifyOtp(@Body(ValidationPipe) otpDto: OtpDto, @Res({ passthrough: true }) res: Response, @Req() req: any) {
 
         const response = await this.authService.verifyOtpAndLogin(otpDto.email, Number(otpDto.otp), res)
         return {
@@ -75,7 +76,7 @@ export class AuthController {
     }
 
 
-    @UseGuards(JwtAuthGuard)
+     @UseGuards(JwtAuthGuard)
     @Post('logout')
     async logout(@Req() req, @Res({ passthrough: true }) res: Response) {
         const user = req.user;

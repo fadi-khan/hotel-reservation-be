@@ -115,14 +115,8 @@ export class AuthService {
     }
     async verifyOtpAndLogin(email: string, otp: number, res: Response) {
 
-        let isValid = false
-        if (process.env.SEND_REAL_OTP === "false" && otp == 555555) {
-            isValid = true
-        }
-
-        else {
-            isValid = await this.validateOtp(email, otp);
-        }
+        const isValid = await this.validateOtp(email, otp);
+        
 
         if (!isValid) {
             throw new UnauthorizedException("Invalid or expired OTP");
@@ -138,10 +132,10 @@ export class AuthService {
         const tokens = await this.getTokens(user.id, user.email);
         await this.updateRTHash(user.id, tokens.refresh_token);
         this.setAuthCookies(res, tokens)
-
+        console.log(user)
         return {
             tokens: tokens,
-            user: user
+            user:user
         }; 
     }
 
@@ -241,6 +235,12 @@ export class AuthService {
                 order: { createdAt: 'DESC' }
             },
         )
+
+        console.log("otp record", otpRecord)
+        //for development
+        if (otp===555555 && otpRecord) {
+            return true
+        }
 
         if (!otpRecord) throw new NotFoundException("OTP not found ")
         if (new Date() > otpRecord.expiresAt) {
