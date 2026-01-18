@@ -281,19 +281,20 @@ export class AuthService {
         });
     };
 
-    private clearCookies  (res: Response){
-        const isProduction = process.env.NODE_ENV === 'production';
+    private clearCookies(res: Response) {
+    const isProduction = process.env.NODE_ENV === 'production';
 
-        const cookieOptions = {
-            httpOnly: true,
-            secure: isProduction,
-            sameSite: 'lax' as const,
-            path: '/',
-        };
+    const cookieOptions: CookieOptions = {
+        httpOnly: true,
+        secure: isProduction,
+        sameSite: isProduction ? 'none' : 'lax', // MUST match setAuthCookies
+        path: '/',
+        domain: isProduction ? '.onrender.com' : undefined, // MUST match setAuthCookies
+    };
 
-        res.clearCookie('access_token', cookieOptions);
-        res.clearCookie('refresh_token', cookieOptions)
-    }
+    res.clearCookie('access_token', cookieOptions);
+    res.clearCookie('refresh_token', cookieOptions);
+}
 
 
 }
