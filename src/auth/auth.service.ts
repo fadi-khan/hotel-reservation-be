@@ -108,7 +108,7 @@ export class AuthService {
 
         const tokens = await this.getTokens(user.id, user.email);
         await this.updateRTHash(user.id, tokens.refresh_token);
-        this.setAuthCookies(res, tokens)
+         this.setAuthCookies(res, tokens)
 
 
         return { tokens, user };
@@ -264,10 +264,10 @@ export class AuthService {
 
         const commonOptions: CookieOptions = {
             httpOnly: true,
-            secure: isProduction,
+            secure: true,
             sameSite: 'none', // MUST be 'none' for cross-subdomain requests
             path: '/',
-            domain: isProduction ? '.onrender.com' : undefined, // Share cookies across subdomains
+             domain: isProduction ? '.onrender.com' : undefined, 
         };
 
         res.cookie('access_token', tokens.access_token, {
@@ -287,9 +287,9 @@ export class AuthService {
     const cookieOptions: CookieOptions = {
         httpOnly: true,
         secure: isProduction,
-        sameSite: isProduction ? 'none' : 'lax', // MUST match setAuthCookies
+        sameSite: 'none', // MUST match setAuthCookies
         path: '/',
-        domain: isProduction ? '.onrender.com' : undefined, // MUST match setAuthCookies
+         domain: isProduction ? '.onrender.com' : undefined, // MUST match setAuthCookies
     };
 
     res.clearCookie('access_token', cookieOptions);
