@@ -286,7 +286,7 @@ export class AuthService {
 
     const cookieOptions: CookieOptions = {
         httpOnly: true,
-        secure: isProduction,
+        secure: true,
         sameSite: 'none', // MUST match setAuthCookies
         path: '/',
          domain: isProduction ? '.onrender.com' : undefined, // MUST match setAuthCookies
