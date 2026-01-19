@@ -267,7 +267,7 @@ export class AuthService {
             secure: true,
             sameSite: 'none', // MUST be 'none' for cross-subdomain requests
             path: '/',
-             domain: isProduction ? '.onrender.com' : undefined, 
+            //  domain: isProduction ? '.onrender.com' : undefined, 
         };
 
         res.cookie('access_token', tokens.access_token, {
@@ -289,7 +289,7 @@ export class AuthService {
         secure: true,
         sameSite: 'none', // MUST match setAuthCookies
         path: '/',
-         domain: isProduction ? '.onrender.com' : undefined, // MUST match setAuthCookies
+        //  domain: isProduction ? '.onrender.com' : undefined, // MUST match setAuthCookies
     };
 
     res.clearCookie('access_token', cookieOptions);
